@@ -1,45 +1,34 @@
 import brand from '../assets/react.svg';
-import { useState, useRef } from 'react';
+import { useState, useRef, FormEvent } from 'react';
 import TextareaAutosize from 'react-textarea-autosize';
 
-const Header: React.FC = () => {
+interface HeaderProps {
+  onSearch: (query: string) => void;
+}
+
+const Header: React.FC<HeaderProps> = ({ onSearch }) => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [searchResults, setSearchResults] = useState<any>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [query, setQuery] = useState('')
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const handleSearch = (e?: FormEvent) => {
+    e?.preventDefault();
+    onSearch(searchTerm);
+  }
 
   const handleClearSearch = () => {
     setSearchTerm('');
-    setSearchResults(null);
+    setQuery('');
     // Focus the textarea after clearing
     if (textareaRef.current) {
       textareaRef.current.focus();
     }
   };
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchTerm.trim()) {
-      setIsLoading(true);
-      // Send search term to the server
-      fetch(`http://127.0.0.1:8000/search?q=${encodeURIComponent(searchTerm)}`)
-        .then(response => {
-          if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
-          }
-          console.log('Response:', response);
-          return response.json();
-        })
-        .then(data => {
-          setSearchResults(data);
-          console.log('Search results:', data);
-        })
-        .catch(error => {
-          console.error('Error searching:', error);
-        })
-        .finally(() => {
-          setIsLoading(false);
-        });
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSearch();
     }
   };
 
@@ -63,6 +52,7 @@ const Header: React.FC = () => {
                     placeholder='Search Google or type a URL'
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
+                    onKeyDown={handleKeyDown}
                   />
                 </div>
                 {searchTerm.length > 0 && (

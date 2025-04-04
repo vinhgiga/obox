@@ -2,15 +2,38 @@ import React from 'react';
 
 interface SearchBarProps {
   onSearch?: (query: string) => void;
+  initialSearchTerm?: string;
 }
 
-const SearchBar: React.FC<SearchBarProps> = ({ onSearch }) => {
-  const [searchTerm, setSearchTerm] = React.useState('');
+const SearchBar: React.FC<SearchBarProps> = ({ onSearch, initialSearchTerm = '' }) => {
+  const [searchTerm, setSearchTerm] = React.useState(initialSearchTerm);
+
+  React.useEffect(() => {
+    // Update search term when URL changes (e.g., when back/forward buttons are pressed)
+    const handlePopState = () => {
+      const params = new URLSearchParams(window.location.search);
+      const query = params.get('q');
+      if (query) {
+        setSearchTerm(query);
+        if (onSearch) {
+          onSearch(query);
+        }
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [onSearch]);
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (onSearch) {
       onSearch(searchTerm);
+
+      // Update URL with search query for browser history
+      const url = new URL(window.location.href);
+      url.searchParams.set('q', searchTerm);
+      window.history.pushState({ query: searchTerm }, '', url.toString());
     }
   };
 
