@@ -89,7 +89,7 @@ const App: React.FC = () => {
     <div className="w-full">
 
       <Header onSearch={handleSearch} />
-      <div className="mt-[100px] ml-[210px] max-w-[50%] font-main">
+      <div className="mt-[100px] ml-[210px] max-w-[60%] font-main">
         {/* Loading State */}
         {isLoading && <p className="mt-4">Loading...</p>}
 

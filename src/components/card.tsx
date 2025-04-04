@@ -1,4 +1,5 @@
 import React from "react";
+import Chat from "./chat";
 interface Data {
   md_hash: string;
   title: string;
@@ -64,7 +65,7 @@ const renderTextWithClickableLinks = (text: string) => {
 
 const CardItem: React.FC<Data> = ({ title, url, text }) => {
   return (
-    <div className="flex flex-col mt-2 border-2 p-2 rounded-md">
+    <div className="flex flex-col mb-2 border-2 p-2 rounded-md">
       <a
         href={url}
         target="_blank"
@@ -88,8 +89,8 @@ const CardItem: React.FC<Data> = ({ title, url, text }) => {
 
 const Card: React.FC<CardProps> = ({ data }) => {
   return (
-    <div>
-      <div className="max-w-[50%] ml-[210px] mt-4 flex flex-col gap-4">
+    <div className="flex">
+      <div className="flex-[6]">
         {data.map((item, index) => (
           <CardItem
             key={index}
@@ -102,8 +103,8 @@ const Card: React.FC<CardProps> = ({ data }) => {
         ))}
       </div>
 
-      <div className="model">
-        
+      <div className="flex-[4] text-xs border-2 border-gray-300 rounded-md p-2 ml-4">
+        <Chat cardData={data} />
       </div>
     </div>
   );
