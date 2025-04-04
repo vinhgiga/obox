@@ -88,10 +88,23 @@ const CardItem: React.FC<Data> = ({ title, url, text }) => {
 
 const Card: React.FC<CardProps> = ({ data }) => {
   return (
-    <div >
-      {data.map((item, index) => (
-        <CardItem key={index} title={item.title} url={item.url} text={item.text} />
-      ))}
+    <div>
+      <div className="max-w-[50%] ml-[210px] mt-4 flex flex-col gap-4">
+        {data.map((item, index) => (
+          <CardItem
+            key={index}
+            title={item.title}
+            url={item.url}
+            text={item.text}
+            md_hash={item.md_hash}
+            created_at={item.created_at}
+          />
+        ))}
+      </div>
+
+      <div className="model">
+        
+      </div>
     </div>
   );
 };

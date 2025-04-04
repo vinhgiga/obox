@@ -8,8 +8,8 @@ interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = ({ onSearch }) => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [query, setQuery] = useState('')
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  // const [query, setQuery] = useState('')
+    const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const handleSearch = (e?: FormEvent) => {
     e?.preventDefault();
@@ -18,8 +18,8 @@ const Header: React.FC<HeaderProps> = ({ onSearch }) => {
 
   const handleClearSearch = () => {
     setSearchTerm('');
-    setQuery('');
-    // Focus the textarea after clearing
+    // const [query, setQuery] = useState('')
+        // Focus the textarea after clearing
     if (textareaRef.current) {
       textareaRef.current.focus();
     }
