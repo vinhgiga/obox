@@ -17,24 +17,10 @@ const App: React.FC = () => {
     setError(null)
     setSearchTerm(query)
 
-    // Update the URL in the address bar to reflect the search
-    const searchParams = new URLSearchParams({ q: query });
-    const newUrl = `/search?${searchParams.toString()}`;
-    window.history.pushState({ query }, '', newUrl);
-
     try {
-      // Fix the URL format to prevent redirects and handle CORS properly
-      // Make sure to use the correct protocol and path format
       const apiUrl = `https://radius-nhs-know-roses.trycloudflare.com/search/?q=${encodeURIComponent(query)}`;
 
-      const response = await fetch(apiUrl, {
-        method: 'GET',
-        headers: {
-          'ngrok-skip-browser-warning': '1',
-        },
-        mode: 'cors', // Explicitly set CORS mode
-        credentials: 'omit' // Don't send cookies to avoid additional CORS complexity
-      });
+      const response = await fetch(apiUrl);
 
       // Log response details for debugging
       console.log('Response status:', response.status);

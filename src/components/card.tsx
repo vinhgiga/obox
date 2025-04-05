@@ -13,7 +13,7 @@ interface CardProps {
 }
 
 const renderTextWithClickableLinks = (text: string) => {
-  const urlRegex = /(https?:\/\/[^\s]+)/g;
+  const urlRegex = /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)/g;
 
   const parts = [];
   let lastIndex = 0;
@@ -74,7 +74,7 @@ const CardItem: React.FC<Data> = ({ title, url, text }) => {
         className="flex items-center group cursor-pointer"
       >
         <img className="w-[28px] h-[28px] rounded-full border-[1px]"
-          src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAMAAABF0y+mAAAAPFBMVEX////G6fxsyvk/v/g4vfhhyPmz4vuK1PoAtfckufgvu/hTxPn6/f+h2/tGwPjS7v255fxMwviT1/qn3vsZjXhWAAAAbElEQVR4AeWOCQqAMAwEq11r06b3//9qAwiI0QfowHINC2N+yLJabE53uycgUGTtF11CmDqLLVdZ57iJhSt9V+4cCQB5a1RGJgr9FrrW866GbmpoGylISlNC3RxnsbY+hLbX0GSJIKE6zOajHN4ZA8/fNs9XAAAAAElFTkSuQmCC"
+          src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAcBAMAAACAI8KnAAAALVBMVEUxaLAnY64bXqx+m8m5x+BOern///9BcrUKV6ny9fqjt9fj6fJrjcKSqtDU3ey95B1TAAAAw0lEQVR4AWOgJWBUUkTmCrs4I/EFQ9LSkhXgSs2FOtPSFjEIMDIKCAowMGQJaGWn5QiaM8seMDZkUMlsYMgqyW7ae/pdzusZDJ1pB5medUxjcrky9W2LE4Na2iPGYzfcDt3znfpWrQDITWDo3Jx28OSb1Mf3FICKswRk09IK2SakPp6jwKCSltmgDMRtGVtyUxwZ2NPSDoWlJQvIXioxX3WRgcks7UVamgcDowAT2BnKadlpWQ0ID8m+flWE4kElBtoDAAonPjdbeqxQAAAAAElFTkSuQmCC"
           alt={title} />
         <div className="ml-2 overflow-hidden group-hover:underline">
           <h2 className=" text-sm">{title}</h2>
@@ -103,10 +103,12 @@ const Card: React.FC<CardProps> = ({ searchTerm, searchData }) => {
           />
         ))}
       </div>
+      {searchData.length > 0 && (
+        <div className="flex-[4] text-xs border-2 border-gray-300 rounded-md p-2 ml-4">
 
-      <div className="flex-[4] text-xs border-2 border-gray-300 rounded-md p-2 ml-4">
-        <Chat searchTerm={searchTerm} cardData={searchData} />
-      </div>
+          <Chat searchTerm={searchTerm} cardData={searchData} />
+        </div>
+      )}
     </div>
   );
 };
