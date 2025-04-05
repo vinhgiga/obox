@@ -7,6 +7,7 @@ import Card from "./components/card";
 const App: React.FC = () => {
   // const [count, setCount] = useState(0)
   const [searchData, setSearchData] = useState<any[]>([])
+  const [searchTerm, setSearchTerm] = useState<string>('')
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -14,6 +15,7 @@ const App: React.FC = () => {
     // Reset states
     setIsLoading(true)
     setError(null)
+    setSearchTerm(query)
 
     // Update the URL in the address bar to reflect the search
     const searchParams = new URLSearchParams({ q: query });
@@ -97,7 +99,7 @@ const App: React.FC = () => {
         {error && <p className="mt-4 text-red-500">{error}</p>}
 
         {/* Card Component */}
-        {!isLoading && <Card data={searchData} />}
+        {!isLoading && <Card searchTerm={searchTerm} searchData={searchData} />}
       </div>
 
     </div>

@@ -8,7 +8,8 @@ interface Data {
   url: string;
 }
 interface CardProps {
-  data: Data[];
+  searchTerm: string;
+  searchData: Data[];
 }
 
 const renderTextWithClickableLinks = (text: string) => {
@@ -87,11 +88,11 @@ const CardItem: React.FC<Data> = ({ title, url, text }) => {
   );
 };
 
-const Card: React.FC<CardProps> = ({ data }) => {
+const Card: React.FC<CardProps> = ({ searchTerm, searchData }) => {
   return (
     <div className="flex">
       <div className="flex-[6]">
-        {data.map((item, index) => (
+        {searchData.map((item, index) => (
           <CardItem
             key={index}
             title={item.title}
@@ -104,7 +105,7 @@ const Card: React.FC<CardProps> = ({ data }) => {
       </div>
 
       <div className="flex-[4] text-xs border-2 border-gray-300 rounded-md p-2 ml-4">
-        <Chat cardData={data} />
+        <Chat searchTerm={searchTerm} cardData={searchData} />
       </div>
     </div>
   );
