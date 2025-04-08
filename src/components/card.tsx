@@ -1,6 +1,5 @@
 import React from "react";
 import Chat from "./chat";
-import { logger } from "../utilities/helper";
 interface Data {
   md_hash: string;
   title: string;
@@ -67,7 +66,7 @@ const renderTextWithClickableLinks = (text: string) => {
 
 const CardItem: React.FC<Data> = ({ title, url, text }) => {
   return (
-    <div className="flex flex-col mb-2 border-2 p-2 rounded-md">
+    <div className="flex flex-col mb-2 border-b-2 sm:border-2 sm:p-2 sm:rounded-md">
       <a
         href={url}
         target="_blank"
@@ -78,22 +77,21 @@ const CardItem: React.FC<Data> = ({ title, url, text }) => {
           src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAcBAMAAACAI8KnAAAALVBMVEUxaLAnY64bXqx+m8m5x+BOern///9BcrUKV6ny9fqjt9fj6fJrjcKSqtDU3ey95B1TAAAAw0lEQVR4AWOgJWBUUkTmCrs4I/EFQ9LSkhXgSs2FOtPSFjEIMDIKCAowMGQJaGWn5QiaM8seMDZkUMlsYMgqyW7ae/pdzusZDJ1pB5medUxjcrky9W2LE4Na2iPGYzfcDt3znfpWrQDITWDo3Jx28OSb1Mf3FICKswRk09IK2SakPp6jwKCSltmgDMRtGVtyUxwZ2NPSDoWlJQvIXioxX3WRgcks7UVamgcDowAT2BnKadlpWQ0ID8m+flWE4kElBtoDAAonPjdbeqxQAAAAAElFTkSuQmCC"
           alt={title} />
         <div className="ml-2 overflow-hidden group-hover:underline">
-          <h2 className=" text-sm">{title}</h2>
-          <div className="text-gray-600 text-xs truncate max-w-full overflow-hidden text-ellipsis whitespace-nowrap ">
+          <h2 className="text-sm">{title}</h2>
+          <div className="text-gray-600 text-[12px] leading-[16px] sm:text-xs truncate overflow-hidden text-ellipsis whitespace-nowrap ">
             {url}
           </div>
         </div>
       </a>
-      <p className="mt-2 whitespace-pre-line">{renderTextWithClickableLinks(text)}</p>
+      <p className="mt-2 text-sm whitespace-pre-line">{renderTextWithClickableLinks(text)}</p>
     </div>
   );
 };
 
 const Card: React.FC<CardProps> = ({ searchTerm, searchData }) => {
-  logger("info", "Rendering Card component");
   return (
-    <div className="flex">
-      <div className="flex-[6]">
+    <div className="flex gap-2 items-end flex-wrap-reverse">
+      <div className="flex-[6] w-full sm:min-w-[400px] max-w-[700px]">
         {searchData.map((item, index) => (
           <CardItem
             key={index}
@@ -106,7 +104,7 @@ const Card: React.FC<CardProps> = ({ searchTerm, searchData }) => {
         ))}
       </div>
       {searchData.length > 0 && (
-        <div className="flex-[4] h-[60vh] text-xs border-2 border-gray-300 rounded-md p-2 ml-4 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-50 scrollbar-track-gray-50">
+        <div className="flex-[4] min-w-[280px] w-full lg:max-w-[400px] h-[60vh] text-xs border-t-2 border-b-2 border-black pt-2 pb-2 sm:border-gray-200 sm:border-2 sm:rounded-md sm:p-2 overflow-y-auto scrollbar-thin">
           <Chat searchTerm={searchTerm} cardData={searchData} />
         </div>
       )}

@@ -1,7 +1,7 @@
 import brand from '../assets/react.svg';
 import { useState, useRef, FormEvent } from 'react';
 import TextareaAutosize from 'react-textarea-autosize';
-import { logger } from '../utilities/helper';
+import { logger } from '../utilities/helpers';
 
 interface HeaderProps {
   onSearch: (query: string) => void;
@@ -35,9 +35,9 @@ const Header: React.FC<HeaderProps> = ({ onSearch }) => {
   };
 
   return (
-    <div className='w-full z-50 min-w-[684px]' style={{ position: 'absolute', top: '20px' }}>
+    <div className='w-full z-50 lg:min-w-[684px]' style={{ position: 'absolute', top: '20px' }}>
       <div className='flex justify-between'>
-        <form className='flex-grow max-w-[861px] ml-[210px]' onSubmit={handleSearch}>
+        <form className='flex-grow max-w-[861px] ml-2 mr-2 lg:ml-[210px]' onSubmit={handleSearch}>
           <div className='m-auto relative w-full'>
             <div className='pl-8 pr-8 absolute top-[12px] left-[-160px]'>
               <img

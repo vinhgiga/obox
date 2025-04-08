@@ -5,8 +5,7 @@ import { mockChunks } from "../data/mockData";
 import tickIcon from "../assets/tick.svg";
 import copyIcon from "../assets/copy.svg";
 import refreshIcon from "../assets/refresh.svg";
-import { logger } from "../utilities/helper";
-
+import { logger } from "../utilities/helpers";
 // Define ChatProps to accept cardData
 interface ChatProps {
   searchTerm?: string;
