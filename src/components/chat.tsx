@@ -5,6 +5,8 @@ import { mockChunks } from "../data/mockData";
 import tickIcon from "../assets/tick.svg";
 import copyIcon from "../assets/copy.svg";
 import refreshIcon from "../assets/refresh.svg";
+import { logger } from "../utilities/helper";
+
 // Define ChatProps to accept cardData
 interface ChatProps {
   searchTerm?: string;
@@ -20,6 +22,7 @@ interface ChatProps {
 // const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY });
 
 function Chat({ searchTerm, cardData }: ChatProps) {
+  logger("info", "Rendering Chat component");
   const [generatedText, setGeneratedText] = useState("");
   const [displayedText, setDisplayedText] = useState("");
   const [copied, setCopied] = useState(false);
@@ -49,7 +52,7 @@ function Chat({ searchTerm, cardData }: ChatProps) {
             .join("\n---\n") + `"""`
           : "Explain how AI works in detail, including examples, technical insights, and a thorough discussion of underlying algorithms and data processing.";
 
-      console.log("Prompt Content:", promptContent); // Debugging line
+      logger("info", "Prompt content:", promptContent);
 
       if (import.meta.env.VITE_USE_MOCK_DATA === "true") {
         // Using mock API response to save api cost with longer text
@@ -127,8 +130,7 @@ function Chat({ searchTerm, cardData }: ChatProps) {
         }
       }
     } catch (err) {
-      let error_log = String(err);
-      setError(error_log);
+      setError(String(err));
     }
   }
 
@@ -142,7 +144,7 @@ function Chat({ searchTerm, cardData }: ChatProps) {
     setError("");
     fetchContent();
     return () => abortController.current?.abort();
-  }, [cardData, searchTerm]);
+  }, [cardData]);
 
   // Refresh: reset text and re-run fetchContent.
   const refreshHandler = () => {

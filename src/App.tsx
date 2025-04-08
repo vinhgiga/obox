@@ -3,8 +3,10 @@ import './App.css';
 import Header from "./components/header";
 import Card from "./components/card";
 // import { mockData } from "./data/mockData";
+import { logger } from "./utilities/helper";
 
 const App: React.FC = () => {
+  logger("info", 'Rendering App component')
   // const [count, setCount] = useState(0)
   const [searchData, setSearchData] = useState<any[]>([])
   const [searchTerm, setSearchTerm] = useState<string>('')

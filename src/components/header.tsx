@@ -1,12 +1,14 @@
 import brand from '../assets/react.svg';
 import { useState, useRef, FormEvent } from 'react';
 import TextareaAutosize from 'react-textarea-autosize';
+import { logger } from '../utilities/helper';
 
 interface HeaderProps {
   onSearch: (query: string) => void;
 }
 
 const Header: React.FC<HeaderProps> = ({ onSearch }) => {
+  logger("info", 'Rendering Header component')
   const [searchTerm, setSearchTerm] = useState('');
   // const [query, setQuery] = useState('')
     const textareaRef = useRef<HTMLTextAreaElement>(null);

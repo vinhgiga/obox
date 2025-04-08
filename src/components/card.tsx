@@ -1,5 +1,6 @@
 import React from "react";
 import Chat from "./chat";
+import { logger } from "../utilities/helper";
 interface Data {
   md_hash: string;
   title: string;
@@ -89,6 +90,7 @@ const CardItem: React.FC<Data> = ({ title, url, text }) => {
 };
 
 const Card: React.FC<CardProps> = ({ searchTerm, searchData }) => {
+  logger("info", "Rendering Card component");
   return (
     <div className="flex">
       <div className="flex-[6]">
