@@ -3,10 +3,8 @@ import './App.css';
 import Header from "./components/header";
 import Card from "./components/card";
 // import { mockData } from "./data/mockData";
-import { logger } from "./utilities/helper";
 
 const App: React.FC = () => {
-  logger("info", 'Rendering App component')
   // const [count, setCount] = useState(0)
   const [searchData, setSearchData] = useState<any[]>([])
   const [searchTerm, setSearchTerm] = useState<string>('')
@@ -77,9 +75,9 @@ const App: React.FC = () => {
 
   return (
     <div className="w-full">
-
+      <title>Obox</title>
       <Header onSearch={handleSearch} />
-      <div className="mt-[100px] ml-[210px] max-w-[60%] font-main">
+      <div className="mt-[100px] ml-2 mr-2 lg:ml-[210px] font-main">
         {/* Loading State */}
         {isLoading && <p className="mt-4">Loading...</p>}
 
