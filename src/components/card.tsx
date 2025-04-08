@@ -104,7 +104,7 @@ const Card: React.FC<CardProps> = ({ searchTerm, searchData }) => {
         ))}
       </div>
       {searchData.length > 0 && (
-        <div className="flex-[4] min-w-[280px] w-full lg:max-w-[400px] h-[60vh] text-xs border-t-2 border-b-2 border-black pt-2 pb-2 sm:border-gray-300 sm:border-2 sm:rounded-md sm:p-2 overflow-y-auto scrollbar-thin">
+        <div className="flex-[4] min-w-[280px] w-full lg:max-w-[400px] h-[60vh] text-xs border-t-2 border-b-2 border-black pt-2 pb-2 sm:border-gray-200 sm:border-2 sm:rounded-md sm:p-2 overflow-y-auto scrollbar-thin">
           <Chat searchTerm={searchTerm} cardData={searchData} />
         </div>
       )}

@@ -1,7 +1,7 @@
 import brand from '../assets/react.svg';
 import { useState, useRef, FormEvent } from 'react';
 import TextareaAutosize from 'react-textarea-autosize';
-import { logger } from '../utilities/helper';
+import { logger } from '../utilities/helpers';
 
 interface HeaderProps {
   onSearch: (query: string) => void;
