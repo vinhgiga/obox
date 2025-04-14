@@ -38,13 +38,9 @@ function Chat({ searchTerm, cardData }: ChatProps) {
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState("");
   const [newApiKey, setNewApiKey] = useState("");
-  const abortController = useRef<AbortController | null>(null);
-  const copyTimeoutRef = useRef<number | null>(null); // Add this ref to store the timeout ID
+  const copyTimeoutRef = useRef<number | null>(null); // remains for copy timeout
 
-  async function fetchContent() {
-    // Create a new AbortController for this request.
-    abortController.current = new AbortController();
-
+  async function fetchContent(signal: AbortSignal) {
     if (import.meta.env.VITE_USE_MOCK_DATA === "true") {
       for (const chunk of mockChunks) {
         setGeneratedText((prev) =>
@@ -73,11 +69,10 @@ function Chat({ searchTerm, cardData }: ChatProps) {
 
       logger("info", "Prompt content:", promptContent);
 
-      // Get API key either from cookie or fallback to env variable.
       const apiKey =
         getCookie("geminiApiKey") || import.meta.env.VITE_GEMINI_API_KEY;
-
       const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:streamGenerateContent?alt=sse&key=${apiKey}`;
+
       const response = await fetch(url, {
         method: "POST",
         headers: {
@@ -91,10 +86,9 @@ function Chat({ searchTerm, cardData }: ChatProps) {
           },
           contents: [{ parts: [{ text: promptContent }] }],
         }),
-        signal: abortController.current.signal,
+        signal,
       });
       if (!response.ok) {
-        // Update error message with instructions.
         throw new Error(
           "Gemini API key appears broken or limit reached. Get API key from https://aistudio.google.com/apikey and enter your API key below.",
         );
@@ -102,28 +96,19 @@ function Chat({ searchTerm, cardData }: ChatProps) {
       if (!response.body) {
         throw new Error("Response body is null");
       }
-      
+
       const reader = response.body.getReader();
       const decoder = new TextDecoder("utf-8");
       let done = false;
       try {
         while (!done) {
-          // Check if request has been aborted before continuing
-          if (abortController.current?.signal.aborted) {
-            break; // Exit the loop if aborted
-          }
-
+          if (signal.aborted) break;
           const { value, done: readerDone } = await reader.read();
           done = readerDone;
           const chunk = decoder.decode(value, { stream: true });
-
           // Process each message in the chunk
           chunk.split("\n\n").forEach((message) => {
-            // Check again if aborted during this processing
-            if (abortController.current?.signal.aborted) {
-              return; // Skip processing this message if aborted
-            }
-
+            if (signal.aborted) return;
             if (message.startsWith("data: ")) {
               const dataStr = message.replace("data: ", "").trim();
               if (dataStr === "[DONE]") return;
@@ -152,44 +137,38 @@ function Chat({ searchTerm, cardData }: ChatProps) {
       } finally {
         reader.releaseLock();
       }
-    } catch (err) {
-      // Only set error if not aborted to avoid state updates on unmounted component
-      if (!abortController.current?.signal.aborted) {
+    } catch (err: any) {
+      if (!signal.aborted) {
         setError(String(err));
       }
     }
   }
 
   useEffect(() => {
-    abortController.current?.abort();
+    const controller = new AbortController();
     setGeneratedText("");
     setDisplayedText("");
     setError("");
-    fetchContent();
-    return () => abortController.current?.abort();
+    fetchContent(controller.signal);
+    return () => {
+      controller.abort();
+    };
   }, [cardData]);
 
   const refreshHandler = () => {
-    // Abort any ongoing requests before starting a new one
-    abortController.current?.abort();
-    abortController.current = new AbortController();
-
+    const controller = new AbortController();
     setGeneratedText("");
     setDisplayedText("");
     setError("");
-    fetchContent();
+    fetchContent(controller.signal);
   };
 
   const copyHandler = () => {
     navigator.clipboard.writeText(generatedText);
     setCopied(true);
-
-    // Clear any existing timeout
     if (copyTimeoutRef.current) {
       clearTimeout(copyTimeoutRef.current);
     }
-
-    // Store the new timeout ID
     copyTimeoutRef.current = window.setTimeout(() => {
       setCopied(false);
       copyTimeoutRef.current = null;
@@ -198,28 +177,17 @@ function Chat({ searchTerm, cardData }: ChatProps) {
 
   useEffect(() => {
     let animationFrame: number | null = null;
-    let isActive = true; // Track if effect is still active
-
-    // Create local variables to track text state within the animation
+    let isActive = true;
     let currentText = displayedText;
     let remainingText = generatedText.slice(displayedText.length);
-
     const animate = () => {
-      if (!isActive) return; // Skip animation if component is unmounting
-
+      if (!isActive) return;
       if (remainingText.length > 0) {
-        // Calculate chunk size based on remaining text length
         const chunkSize = Math.max(1, Math.round(remainingText.length / 60));
         const textChunk = remainingText.slice(0, chunkSize);
-
-        // Update the displayed text with the new chunk
         currentText += textChunk;
         setDisplayedText(currentText);
-
-        // Update remaining text
         remainingText = remainingText.slice(chunkSize);
-
-        // Continue animation
         animationFrame = requestAnimationFrame(animate);
       }
     };
@@ -229,7 +197,7 @@ function Chat({ searchTerm, cardData }: ChatProps) {
     }
 
     return () => {
-      isActive = false; // Mark as inactive when unmounting
+      isActive = false;
       if (animationFrame !== null) {
         cancelAnimationFrame(animationFrame);
       }
@@ -244,7 +212,6 @@ function Chat({ searchTerm, cardData }: ChatProps) {
     };
   }, []);
 
-  // Handler to update and store new API key via cookie
   const handleApiKeySubmit = () => {
     if (newApiKey.trim() !== "") {
       const expires = new Date(
