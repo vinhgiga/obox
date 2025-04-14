@@ -1,7 +1,7 @@
 import React from "react";
 import "./App.css";
 import Header from "./components/header";
-import Card from "./components/card";
+import SearchResults from "./components/searchResults";
 import Chat from "./components/chat";
 import { useAppContext } from "./context/AppContext";
 
@@ -16,16 +16,15 @@ const App: React.FC = () => {
     <div className="w-full">
       <title>Obox</title>
       <Header onSearch={handleSearch} />
-      <div className="ml-2 mr-2 mt-[100px] flex flex-wrap-reverse items-end gap-2 lg:ml-[210px]">
-        {/* Card Component */}
+      <div className="my-[100px] ml-2 mr-2 flex flex-wrap-reverse items-end gap-2 lg:ml-[210px]">
+        {/* SearchResults Component */}
         {hasSearched && (
           <div className="w-full max-w-[700px] flex-[6] sm:min-w-[400px]">
+            {error && <div className="my-2 text-sm text-red-500">{error}</div>}
             {isLoading ? (
-              <div className="mb-2 flex flex-col border-b-2 sm:rounded-md sm:border-2 sm:p-2">
-                <p className="py-4">Searching...</p>
-              </div>
+              <div>Searching...</div>
             ) : (
-              <Card searchTerm={searchTerm} searchData={searchData} />
+              <SearchResults searchTerm={searchTerm} searchData={searchData} />
             )}
           </div>
         )}

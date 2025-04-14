@@ -57,13 +57,12 @@ function Chat({ searchTerm, cardData }: ChatProps) {
 
     try {
       let systemPrompt = `Bạn sẽ được cung cấp các bài viết ngẫu nhiên. Thực hiện theo các bước sau để trả lời truy vấn:
-      1 - Tự bạn giải quyết vấn đề
-      2 - Chỉ đưa ra câu trả lời khi đã giải quyết xong
-      3 - Chọn các bài viết liên quan, bổ sung thông tin tổng quan cho vấn đề.
+      1. Tự bạn giải quyết vấn đề
+      2. Chỉ đưa ra câu trả lời khi đã giải quyết xong
+      3. Chọn các bài viết liên quan, bổ sung thông tin tổng quan cho vấn đề.
       Diễn đạt phải chi tiết, đầy đủ, toàn diện và không sử dụng bảng. Phân tích sâu sắc các khái niệm và thông tin liên quan bằng từ ngữ phổ biến. Đánh dấu từ khóa, thuật ngữ, từ đầy đủ của từ viết tắt trong dấu backtick. 
-      Ví dụ về định dạng: "WARP là một dịch vụ \`VPN\` tích hợp trong ứng dụng \`1.1.1.1\` của \`Cloudflare\`, cung cấp trải nghiệm truy cập \`Internet\` an toàn và nhanh chóng. Dịch vụ này sử dụng giao thức \`WireGuard\` thông qua \`BoringTun\` để mã hóa toàn bộ lưu lượng truy cập..."`;
+      Ví dụ về định dạng: "WARP là một mạng riêng ảo (\`Virtual Private Network, VPN\`) tích hợp trong ứng dụng \`1.1.1.1\` của \`Cloudflare\`..."`;
 
-      // Build prompt based on cardData if provided
       const promptContent =
         cardData && cardData.length > 0
           ? `Truy vấn: """${searchTerm}"""\n` +
@@ -103,6 +102,7 @@ function Chat({ searchTerm, cardData }: ChatProps) {
       if (!response.body) {
         throw new Error("Response body is null");
       }
+      
       const reader = response.body.getReader();
       const decoder = new TextDecoder("utf-8");
       let done = false;

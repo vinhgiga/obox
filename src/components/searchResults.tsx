@@ -16,7 +16,9 @@ interface CardProps {
 }
 
 const renderTextWithClickableLinks = (text: string) => {
-  const urlRegex = /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)/g;
+  // https://stackoverflow.com/questions/3809401/what-is-a-good-regular-expression-to-match-a-url
+  const urlRegex =
+    /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)/g;
 
   const parts = [];
   let lastIndex = 0;
@@ -26,15 +28,15 @@ const renderTextWithClickableLinks = (text: string) => {
     // Add text before URL
     if (match.index > lastIndex) {
       parts.push({
-        type: 'text',
-        content: text.substring(lastIndex, match.index)
+        type: "text",
+        content: text.substring(lastIndex, match.index),
       });
     }
 
     // Add URL
     parts.push({
-      type: 'url',
-      content: match[0]
+      type: "url",
+      content: match[0],
     });
 
     lastIndex = match.index + match[0].length;
@@ -43,14 +45,14 @@ const renderTextWithClickableLinks = (text: string) => {
   // Add remaining text
   if (lastIndex < text.length) {
     parts.push({
-      type: 'text',
-      content: text.substring(lastIndex)
+      type: "text",
+      content: text.substring(lastIndex),
     });
   }
 
   // Render parts
   return parts.map((part, index) => {
-    if (part.type === 'url') {
+    if (part.type === "url") {
       return (
         <a
           key={index}
@@ -69,36 +71,39 @@ const renderTextWithClickableLinks = (text: string) => {
 
 const CardItem: React.FC<Data> = ({ title, url, text }) => {
   return (
-    <div className="flex flex-col mb-2 border-b-2 sm:border-2 sm:p-2 sm:rounded-md">
+    <div className="mb-2 flex flex-col border-b-2 sm:rounded-md sm:border-2 sm:p-2">
       <a
         href={url}
         target="_blank"
         rel="noopener noreferrer"
-        className="flex items-center group cursor-pointer"
+        className="group flex cursor-pointer items-center"
       >
-        <img className="w-[28px] h-[28px] rounded-full border-[1px]"
+        <img
+          className="h-[28px] w-[28px] rounded-full border-[1px]"
           src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAcBAMAAACAI8KnAAAALVBMVEUxaLAnY64bXqx+m8m5x+BOern///9BcrUKV6ny9fqjt9fj6fJrjcKSqtDU3ey95B1TAAAAw0lEQVR4AWOgJWBUUkTmCrs4I/EFQ9LSkhXgSs2FOtPSFjEIMDIKCAowMGQJaGWn5QiaM8seMDZkUMlsYMgqyW7ae/pdzusZDJ1pB5medUxjcrky9W2LE4Na2iPGYzfcDt3znfpWrQDITWDo3Jx28OSb1Mf3FICKswRk09IK2SakPp6jwKCSltmgDMRtGVtyUxwZ2NPSDoWlJQvIXioxX3WRgcks7UVamgcDowAT2BnKadlpWQ0ID8m+flWE4kElBtoDAAonPjdbeqxQAAAAAElFTkSuQmCC"
-          alt={title} />
+          alt={title}
+        />
         <div className="ml-2 overflow-hidden group-hover:underline">
           <h2 className="text-sm">{title}</h2>
-          <div className="text-gray-600 text-[12px] leading-[16px] sm:text-xs truncate overflow-hidden text-ellipsis whitespace-nowrap ">
+          <div className="overflow-hidden truncate text-ellipsis whitespace-nowrap text-[12px] leading-[16px] text-gray-600 sm:text-xs">
             {url}
           </div>
         </div>
       </a>
-      <p className="mt-2 text-sm whitespace-pre-line">{renderTextWithClickableLinks(text)}</p>
+      <p className="mt-2 whitespace-pre-line text-sm">
+        {renderTextWithClickableLinks(text)}
+      </p>
     </div>
   );
 };
 
-const Card: React.FC<CardProps> = (props) => {
-  logger("info", 'Rendering Card component')
+const SearchResults: React.FC<CardProps> = (props) => {
+  logger("info", "Rendering Card component");
   const { searchState } = useAppContext();
-  const searchTerm = props.searchTerm || searchState.searchTerm;
   const searchData = props.searchData || searchState.searchData;
 
   return (
-    <div className="flex-[6] w-full sm:min-w-[400px] max-w-[700px]">
+    <div>
       {searchData.map((item, index) => (
         <CardItem
           key={index}
@@ -113,4 +118,4 @@ const Card: React.FC<CardProps> = (props) => {
   );
 };
 
-export default Card;
+export default SearchResults;
