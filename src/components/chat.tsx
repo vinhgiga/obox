@@ -47,16 +47,19 @@ function Chat({ searchTerm, cardData }: ChatProps) {
 
     if (import.meta.env.VITE_USE_MOCK_DATA === "true") {
       for (const chunk of mockChunks) {
-        setGeneratedText(prev =>
-          prev.slice(-chunk.length) === chunk ? prev : prev + chunk
+        setGeneratedText((prev) =>
+          prev.slice(-chunk.length) === chunk ? prev : prev + chunk,
         );
-        await new Promise(resolve => setTimeout(resolve, 300)); // simulate delay
+        await new Promise((resolve) => setTimeout(resolve, 300)); // simulate delay
       }
       return;
     }
 
     try {
-      let systemPrompt = `Bạn sẽ được cung cấp một truy vấn và các bài viết. Suy nghĩ tuần tự: Tự bạn giải quyết vấn đề > Chỉ đưa ra câu trả lời khi đã giải quyết xong > Cuối cùng, từ các bài viết, bổ sung thông tin tổng quan cho vấn đề.
+      let systemPrompt = `Bạn sẽ được cung cấp các bài viết ngẫu nhiên. Thực hiện theo các bước sau để trả lời truy vấn:
+      1 - Tự bạn giải quyết vấn đề
+      2 - Chỉ đưa ra câu trả lời khi đã giải quyết xong
+      3 - Chọn các bài viết liên quan, bổ sung thông tin tổng quan cho vấn đề.
       Diễn đạt phải chi tiết, đầy đủ, toàn diện và không sử dụng bảng. Phân tích sâu sắc các khái niệm và thông tin liên quan bằng từ ngữ phổ biến. Đánh dấu từ khóa, thuật ngữ, từ đầy đủ của từ viết tắt trong dấu backtick. 
       Ví dụ về định dạng: "WARP là một dịch vụ \`VPN\` tích hợp trong ứng dụng \`1.1.1.1\` của \`Cloudflare\`, cung cấp trải nghiệm truy cập \`Internet\` an toàn và nhanh chóng. Dịch vụ này sử dụng giao thức \`WireGuard\` thông qua \`BoringTun\` để mã hóa toàn bộ lưu lượng truy cập..."`;
 
@@ -64,15 +67,16 @@ function Chat({ searchTerm, cardData }: ChatProps) {
       const promptContent =
         cardData && cardData.length > 0
           ? `Truy vấn: """${searchTerm}"""\n` +
-          `Các bài viết: """` +
-          cardData.map(item => `${item.text}`).join("\n---\n") +
-          `"""`
+            `Các bài viết: """` +
+            cardData.map((item) => `${item.text}`).join("\n---\n") +
+            `"""`
           : "Explain how AI works in detail, including examples, technical insights, and a thorough discussion of underlying algorithms and data processing.";
 
       logger("info", "Prompt content:", promptContent);
 
       // Get API key either from cookie or fallback to env variable.
-      const apiKey = getCookie("geminiApiKey") || import.meta.env.VITE_GEMINI_API_KEY;
+      const apiKey =
+        getCookie("geminiApiKey") || import.meta.env.VITE_GEMINI_API_KEY;
 
       const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:streamGenerateContent?alt=sse&key=${apiKey}`;
       const response = await fetch(url, {
@@ -80,23 +84,21 @@ function Chat({ searchTerm, cardData }: ChatProps) {
         headers: {
           "Content-Type": "application/json",
           "sec-fetch-mode": "cors",
-          "sec-fetch-site": "cross-site"
+          "sec-fetch-site": "cross-site",
         },
         body: JSON.stringify({
-          "system_instruction": {
-            "parts": [
-              { text: systemPrompt }
-            ]
+          system_instruction: {
+            parts: [{ text: systemPrompt }],
           },
-          contents: [
-            { parts: [{ text: promptContent }] }
-          ]
+          contents: [{ parts: [{ text: promptContent }] }],
         }),
-        signal: abortController.current.signal
+        signal: abortController.current.signal,
       });
       if (!response.ok) {
         // Update error message with instructions.
-        throw new Error("Gemini API key appears broken or limit reached. Get API key from https://aistudio.google.com/apikey and enter your API key below.");
+        throw new Error(
+          "Gemini API key appears broken or limit reached. Get API key from https://aistudio.google.com/apikey and enter your API key below.",
+        );
       }
       if (!response.body) {
         throw new Error("Response body is null");
@@ -116,7 +118,7 @@ function Chat({ searchTerm, cardData }: ChatProps) {
           const chunk = decoder.decode(value, { stream: true });
 
           // Process each message in the chunk
-          chunk.split("\n\n").forEach(message => {
+          chunk.split("\n\n").forEach((message) => {
             // Check again if aborted during this processing
             if (abortController.current?.signal.aborted) {
               return; // Skip processing this message if aborted
@@ -129,15 +131,16 @@ function Chat({ searchTerm, cardData }: ChatProps) {
                 const dataObj = JSON.parse(dataStr);
                 let candidateText = "";
                 if (dataObj.candidates && dataObj.candidates.length > 0) {
-                  candidateText = dataObj.candidates[0]?.content?.parts
-                    ?.map((part: { text: any; }) => part.text)
-                    .join("") || "";
+                  candidateText =
+                    dataObj.candidates[0]?.content?.parts
+                      ?.map((part: { text: any }) => part.text)
+                      .join("") || "";
                 } else if (dataObj.text) {
                   candidateText = dataObj.text;
                 }
                 if (candidateText) {
-                  setGeneratedText(prev =>
-                    prev.endsWith(candidateText) ? prev : prev + candidateText
+                  setGeneratedText((prev) =>
+                    prev.endsWith(candidateText) ? prev : prev + candidateText,
                   );
                 }
               } catch (error) {
@@ -149,7 +152,6 @@ function Chat({ searchTerm, cardData }: ChatProps) {
       } finally {
         reader.releaseLock();
       }
-
     } catch (err) {
       // Only set error if not aborted to avoid state updates on unmounted component
       if (!abortController.current?.signal.aborted) {
@@ -196,17 +198,28 @@ function Chat({ searchTerm, cardData }: ChatProps) {
 
   useEffect(() => {
     let animationFrame: number | null = null;
-    let lastTime = 0;
-    let isActive = true;  // Track if effect is still active
+    let isActive = true; // Track if effect is still active
 
-    const animate = (timestamp: number) => {
-      if (!isActive) return;  // Skip animation if component is unmounting
+    // Create local variables to track text state within the animation
+    let currentText = displayedText;
+    let remainingText = generatedText.slice(displayedText.length);
 
-      if (displayedText.length < generatedText.length) {
-        if (timestamp - lastTime > 5) {
-          setDisplayedText(generatedText.slice(0, displayedText.length + 1));
-          lastTime = timestamp;
-        }
+    const animate = () => {
+      if (!isActive) return; // Skip animation if component is unmounting
+
+      if (remainingText.length > 0) {
+        // Calculate chunk size based on remaining text length
+        const chunkSize = Math.max(1, Math.round(remainingText.length / 60));
+        const textChunk = remainingText.slice(0, chunkSize);
+
+        // Update the displayed text with the new chunk
+        currentText += textChunk;
+        setDisplayedText(currentText);
+
+        // Update remaining text
+        remainingText = remainingText.slice(chunkSize);
+
+        // Continue animation
         animationFrame = requestAnimationFrame(animate);
       }
     };
@@ -216,7 +229,7 @@ function Chat({ searchTerm, cardData }: ChatProps) {
     }
 
     return () => {
-      isActive = false;  // Mark as inactive when unmounting
+      isActive = false; // Mark as inactive when unmounting
       if (animationFrame !== null) {
         cancelAnimationFrame(animationFrame);
       }
@@ -234,7 +247,9 @@ function Chat({ searchTerm, cardData }: ChatProps) {
   // Handler to update and store new API key via cookie
   const handleApiKeySubmit = () => {
     if (newApiKey.trim() !== "") {
-      const expires = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toUTCString();
+      const expires = new Date(
+        Date.now() + 30 * 24 * 60 * 60 * 1000,
+      ).toUTCString();
       document.cookie = `geminiApiKey=${newApiKey}; path=/; expires=${expires}`;
       setError("");
       setNewApiKey("");
@@ -245,9 +260,10 @@ function Chat({ searchTerm, cardData }: ChatProps) {
   return (
     <div>
       {error && error.includes("Gemini API key") ? (
-        <div style={{ marginBottom: '10px' }}>
+        <div style={{ marginBottom: "10px" }}>
           Gemini API key appears broken or limit reached. Get API key from{" "}
-          <a className="text-blue-500 hover:underline"
+          <a
+            className="text-blue-500 hover:underline"
             href="https://aistudio.google.com/apikey"
             target="_blank"
             rel="noreferrer"
@@ -257,25 +273,30 @@ function Chat({ searchTerm, cardData }: ChatProps) {
           and enter your API key below.
           <div className="mt-2 flex gap-2">
             <input
-              className="flex-1 border-2 border-gray-300 rounded-md p-1 focus:border-blue-500 focus:outline-none"
+              className="flex-1 rounded-md border-2 border-gray-300 p-1 focus:border-blue-500 focus:outline-none"
               type="text"
               placeholder="Enter new API key"
               value={newApiKey ? formatApiKey(newApiKey) : ""}
-              onChange={e => setNewApiKey(e.target.value)}
+              onChange={(e) => setNewApiKey(e.target.value)}
             />
-            <button className="bg-blue-500 text-white rounded-md p-1 hover:bg-blue-600"
-              onClick={handleApiKeySubmit}>Save API Key</button>
+            <button
+              className="rounded-md bg-blue-500 p-1 text-white hover:bg-blue-600"
+              onClick={handleApiKeySubmit}
+            >
+              Save API Key
+            </button>
           </div>
         </div>
       ) : error ? (
-        <div style={{ color: 'red', marginBottom: '10px' }}>
-          {error}
-        </div>
+        <div style={{ color: "red", marginBottom: "10px" }}>{error}</div>
       ) : null}
       <ReactMarkdown>{displayedText || "Generating..."}</ReactMarkdown>
       {displayedText === generatedText && generatedText !== "" && (
-        <div className="flex mt-2 gap-2">
-          <button onClick={copyHandler} title={copied ? "Copied" : "Copy to clipboard"}>
+        <div className="mt-2 flex gap-2">
+          <button
+            onClick={copyHandler}
+            title={copied ? "Copied" : "Copy to clipboard"}
+          >
             {copied ? (
               <img src={tickIcon} alt="tick icon" />
             ) : (
