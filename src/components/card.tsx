@@ -1,5 +1,7 @@
 import React from "react";
-import Chat from "./chat";
+import { useAppContext } from "../context/AppContext";
+import { logger } from "../utilities/helpers";
+
 interface Data {
   md_hash: string;
   title: string;
@@ -7,9 +9,10 @@ interface Data {
   created_at: string;
   url: string;
 }
+
 interface CardProps {
-  searchTerm: string;
-  searchData: Data[];
+  searchTerm?: string;
+  searchData?: Data[];
 }
 
 const renderTextWithClickableLinks = (text: string) => {
@@ -88,26 +91,24 @@ const CardItem: React.FC<Data> = ({ title, url, text }) => {
   );
 };
 
-const Card: React.FC<CardProps> = ({ searchTerm, searchData }) => {
+const Card: React.FC<CardProps> = (props) => {
+  logger("info", 'Rendering Card component')
+  const { searchState } = useAppContext();
+  const searchTerm = props.searchTerm || searchState.searchTerm;
+  const searchData = props.searchData || searchState.searchData;
+
   return (
-    <div className="flex gap-2 items-end flex-wrap-reverse">
-      <div className="flex-[6] w-full sm:min-w-[400px] max-w-[700px]">
-        {searchData.map((item, index) => (
-          <CardItem
-            key={index}
-            title={item.title}
-            url={item.url}
-            text={item.text}
-            md_hash={item.md_hash}
-            created_at={item.created_at}
-          />
-        ))}
-      </div>
-      {searchData.length > 0 && (
-        <div className="flex-[4] min-w-[280px] w-full lg:max-w-[400px] h-[60vh] text-xs border-t-2 border-b-2 border-black pt-2 pb-2 sm:border-gray-200 sm:border-2 sm:rounded-md sm:p-2 overflow-y-auto scrollbar-thin">
-          <Chat searchTerm={searchTerm} cardData={searchData} />
-        </div>
-      )}
+    <div className="flex-[6] w-full sm:min-w-[400px] max-w-[700px]">
+      {searchData.map((item, index) => (
+        <CardItem
+          key={index}
+          title={item.title}
+          url={item.url}
+          text={item.text}
+          md_hash={item.md_hash}
+          created_at={item.created_at}
+        />
+      ))}
     </div>
   );
 };

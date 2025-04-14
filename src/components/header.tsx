@@ -2,26 +2,29 @@ import brand from '../assets/react.svg';
 import { useState, useRef, FormEvent } from 'react';
 import TextareaAutosize from 'react-textarea-autosize';
 import { logger } from '../utilities/helpers';
+import { useAppContext } from '../context/AppContext';
 
 interface HeaderProps {
-  onSearch: (query: string) => void;
+  onSearch?: (query: string) => void;
 }
 
 const Header: React.FC<HeaderProps> = ({ onSearch }) => {
   logger("info", 'Rendering Header component')
+  const { searchState, handleSearch: contextHandleSearch } = useAppContext();
   const [searchTerm, setSearchTerm] = useState('');
-  // const [query, setQuery] = useState('')
-    const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const handleSearch = (e?: FormEvent) => {
     e?.preventDefault();
-    onSearch(searchTerm);
+    if (contextHandleSearch) {
+      contextHandleSearch(searchTerm);
+    } else if (onSearch) {
+      onSearch(searchTerm);
+    }
   }
 
   const handleClearSearch = () => {
     setSearchTerm('');
-    // const [query, setQuery] = useState('')
-        // Focus the textarea after clearing
     if (textareaRef.current) {
       textareaRef.current.focus();
     }

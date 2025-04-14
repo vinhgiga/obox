@@ -26,6 +26,11 @@ function getCookie(name: string) {
   return "";
 }
 
+function formatApiKey(apiKey: string): string {
+  if (apiKey.length <= 6) return apiKey;
+  return apiKey.slice(0, 2) + "..." + apiKey.slice(-4);
+}
+
 function Chat({ searchTerm, cardData }: ChatProps) {
   logger("info", "Rendering Chat component");
   const [generatedText, setGeneratedText] = useState("");
@@ -33,21 +38,27 @@ function Chat({ searchTerm, cardData }: ChatProps) {
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState("");
   const [newApiKey, setNewApiKey] = useState("");
-  const hasFetched = useRef(false); // added flag
   const abortController = useRef<AbortController | null>(null);
+  const copyTimeoutRef = useRef<number | null>(null); // Add this ref to store the timeout ID
 
   async function fetchContent() {
-    if (hasFetched.current) return; // prevent duplicate call
-    hasFetched.current = true;
-    setError("");
-
     // Create a new AbortController for this request.
     abortController.current = new AbortController();
 
+    if (import.meta.env.VITE_USE_MOCK_DATA === "true") {
+      for (const chunk of mockChunks) {
+        setGeneratedText(prev =>
+          prev.slice(-chunk.length) === chunk ? prev : prev + chunk
+        );
+        await new Promise(resolve => setTimeout(resolve, 300)); // simulate delay
+      }
+      return;
+    }
+
     try {
-      let systemPrompt = `Bạn sẽ được cung cấp một truy vấn và các bài viết. Suy nghĩ theo quy trình: Tự bạn giải quyết vấn đề. Chỉ đưa ra câu trả lời khi đã giải quyết xong. Sau đó, từ các bài viết, bổ sung thông tin toàn diện cho vấn đề.
-      Diễn đạt phải chi tiết, đầy đủ và toàn diện. Phân tích sâu sắc các khái niệm và thông tin liên quan bằng từ ngữ phổ biến. Đánh dấu từ khóa, thuật ngữ, từ đầy đủ của từ viết tắt trong dấu backtick. 
-      Ví dụ về định dạng câu trả lời: "WARP là một dịch vụ \`VPN\` tích hợp trong ứng dụng \`1.1.1.1\` của \`Cloudflare\`, cung cấp trải nghiệm truy cập \`Internet\` an toàn và nhanh chóng. Dịch vụ này sử dụng giao thức \`WireGuard\` thông qua \`BoringTun\` để mã hóa toàn bộ lưu lượng truy cập..."`;
+      let systemPrompt = `Bạn sẽ được cung cấp một truy vấn và các bài viết. Suy nghĩ tuần tự: Tự bạn giải quyết vấn đề > Chỉ đưa ra câu trả lời khi đã giải quyết xong > Cuối cùng, từ các bài viết, bổ sung thông tin tổng quan cho vấn đề.
+      Diễn đạt phải chi tiết, đầy đủ, toàn diện và không sử dụng bảng. Phân tích sâu sắc các khái niệm và thông tin liên quan bằng từ ngữ phổ biến. Đánh dấu từ khóa, thuật ngữ, từ đầy đủ của từ viết tắt trong dấu backtick. 
+      Ví dụ về định dạng: "WARP là một dịch vụ \`VPN\` tích hợp trong ứng dụng \`1.1.1.1\` của \`Cloudflare\`, cung cấp trải nghiệm truy cập \`Internet\` an toàn và nhanh chóng. Dịch vụ này sử dụng giao thức \`WireGuard\` thông qua \`BoringTun\` để mã hóa toàn bộ lưu lượng truy cập..."`;
 
       // Build prompt based on cardData if provided
       const promptContent =
@@ -63,49 +74,54 @@ function Chat({ searchTerm, cardData }: ChatProps) {
       // Get API key either from cookie or fallback to env variable.
       const apiKey = getCookie("geminiApiKey") || import.meta.env.VITE_GEMINI_API_KEY;
 
-      if (import.meta.env.VITE_USE_MOCK_DATA === "true") {
-        for (const chunk of mockChunks) {
-          setGeneratedText(prev =>
-            prev.slice(-chunk.length) === chunk ? prev : prev + chunk
-          );
-          await new Promise(resolve => setTimeout(resolve, 300)); // simulate delay
-        }
-      } else {
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:streamGenerateContent?alt=sse&key=${apiKey}`;
-        const response = await fetch(url, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "sec-fetch-mode": "cors",
-            "sec-fetch-site": "cross-site"
-          },
-          body: JSON.stringify({
-            "system_instruction": {
-              "parts": [
-                { text: systemPrompt }
-              ]
-            },
-            contents: [
-              { parts: [{ text: promptContent }] }
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:streamGenerateContent?alt=sse&key=${apiKey}`;
+      const response = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "sec-fetch-mode": "cors",
+          "sec-fetch-site": "cross-site"
+        },
+        body: JSON.stringify({
+          "system_instruction": {
+            "parts": [
+              { text: systemPrompt }
             ]
-          }),
-          signal: abortController.current.signal
-        });
-        if (!response.ok) {
-          // Update error message with instructions.
-          throw new Error("Gemini API key appears broken or limit reached. Get API key from https://aistudio.google.com/apikey and enter your API key below.");
-        }
-        if (!response.body) {
-          throw new Error("Response body is null");
-        }
-        const reader = response.body.getReader();
-        const decoder = new TextDecoder("utf-8");
-        let done = false;
+          },
+          contents: [
+            { parts: [{ text: promptContent }] }
+          ]
+        }),
+        signal: abortController.current.signal
+      });
+      if (!response.ok) {
+        // Update error message with instructions.
+        throw new Error("Gemini API key appears broken or limit reached. Get API key from https://aistudio.google.com/apikey and enter your API key below.");
+      }
+      if (!response.body) {
+        throw new Error("Response body is null");
+      }
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder("utf-8");
+      let done = false;
+      try {
         while (!done) {
+          // Check if request has been aborted before continuing
+          if (abortController.current?.signal.aborted) {
+            break; // Exit the loop if aborted
+          }
+
           const { value, done: readerDone } = await reader.read();
           done = readerDone;
           const chunk = decoder.decode(value, { stream: true });
+
+          // Process each message in the chunk
           chunk.split("\n\n").forEach(message => {
+            // Check again if aborted during this processing
+            if (abortController.current?.signal.aborted) {
+              return; // Skip processing this message if aborted
+            }
+
             if (message.startsWith("data: ")) {
               const dataStr = message.replace("data: ", "").trim();
               if (dataStr === "[DONE]") return;
@@ -130,15 +146,20 @@ function Chat({ searchTerm, cardData }: ChatProps) {
             }
           });
         }
+      } finally {
+        reader.releaseLock();
       }
+
     } catch (err) {
-      setError(String(err));
+      // Only set error if not aborted to avoid state updates on unmounted component
+      if (!abortController.current?.signal.aborted) {
+        setError(String(err));
+      }
     }
   }
 
   useEffect(() => {
     abortController.current?.abort();
-    hasFetched.current = false;
     setGeneratedText("");
     setDisplayedText("");
     setError("");
@@ -147,27 +168,68 @@ function Chat({ searchTerm, cardData }: ChatProps) {
   }, [cardData]);
 
   const refreshHandler = () => {
+    // Abort any ongoing requests before starting a new one
+    abortController.current?.abort();
+    abortController.current = new AbortController();
+
     setGeneratedText("");
     setDisplayedText("");
     setError("");
-    hasFetched.current = false;
     fetchContent();
   };
 
   const copyHandler = () => {
     navigator.clipboard.writeText(generatedText);
     setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+
+    // Clear any existing timeout
+    if (copyTimeoutRef.current) {
+      clearTimeout(copyTimeoutRef.current);
+    }
+
+    // Store the new timeout ID
+    copyTimeoutRef.current = window.setTimeout(() => {
+      setCopied(false);
+      copyTimeoutRef.current = null;
+    }, 2000);
   };
 
   useEffect(() => {
+    let animationFrame: number | null = null;
+    let lastTime = 0;
+    let isActive = true;  // Track if effect is still active
+
+    const animate = (timestamp: number) => {
+      if (!isActive) return;  // Skip animation if component is unmounting
+
+      if (displayedText.length < generatedText.length) {
+        if (timestamp - lastTime > 5) {
+          setDisplayedText(generatedText.slice(0, displayedText.length + 1));
+          lastTime = timestamp;
+        }
+        animationFrame = requestAnimationFrame(animate);
+      }
+    };
+
     if (displayedText.length < generatedText.length) {
-      const timeout = setTimeout(() => {
-        setDisplayedText(generatedText.slice(0, displayedText.length + 1));
-      }, 5);
-      return () => clearTimeout(timeout);
+      animationFrame = requestAnimationFrame(animate);
     }
+
+    return () => {
+      isActive = false;  // Mark as inactive when unmounting
+      if (animationFrame !== null) {
+        cancelAnimationFrame(animationFrame);
+      }
+    };
   }, [generatedText, displayedText]);
+
+  useEffect(() => {
+    return () => {
+      if (copyTimeoutRef.current) {
+        clearTimeout(copyTimeoutRef.current);
+      }
+    };
+  }, []);
 
   // Handler to update and store new API key via cookie
   const handleApiKeySubmit = () => {
@@ -194,10 +256,11 @@ function Chat({ searchTerm, cardData }: ChatProps) {
           </a>{" "}
           and enter your API key below.
           <div className="mt-2 flex gap-2">
-            <input className="flex-1 border-2 border-gray-300 rounded-md p-1 focus:border-blue-500 focus:outline-none"
-              type="password"
+            <input
+              className="flex-1 border-2 border-gray-300 rounded-md p-1 focus:border-blue-500 focus:outline-none"
+              type="text"
               placeholder="Enter new API key"
-              value={newApiKey}
+              value={newApiKey ? formatApiKey(newApiKey) : ""}
               onChange={e => setNewApiKey(e.target.value)}
             />
             <button className="bg-blue-500 text-white rounded-md p-1 hover:bg-blue-600"
