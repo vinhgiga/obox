@@ -38,9 +38,12 @@ function Chat({ searchTerm, cardData }: ChatProps) {
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState("");
   const [newApiKey, setNewApiKey] = useState("");
+  const [isGenerating, setIsGenerating] = useState(false);
   const copyTimeoutRef = useRef<number | null>(null); // remains for copy timeout
 
   async function fetchContent(signal: AbortSignal) {
+    setIsGenerating(true);
+    
     if (import.meta.env.VITE_USE_MOCK_DATA === "true") {
       for (const chunk of mockChunks) {
         setGeneratedText((prev) =>
@@ -48,16 +51,16 @@ function Chat({ searchTerm, cardData }: ChatProps) {
         );
         await new Promise((resolve) => setTimeout(resolve, 300)); // simulate delay
       }
+      setIsGenerating(false);
       return;
     }
 
     try {
-      let systemPrompt = `Bạn sẽ được cung cấp các bài viết ngẫu nhiên. Thực hiện theo các bước sau để trả lời truy vấn:
-      1. Tự bạn giải quyết vấn đề
-      2. Chỉ đưa ra câu trả lời khi đã giải quyết xong
-      3. Chọn các bài viết liên quan, bổ sung thông tin tổng quan cho vấn đề.
-      Diễn đạt phải chi tiết, đầy đủ, toàn diện và không sử dụng bảng. Phân tích sâu sắc các khái niệm và thông tin liên quan bằng từ ngữ phổ biến. Đánh dấu từ khóa, thuật ngữ, từ đầy đủ của từ viết tắt trong dấu backtick. 
-      Ví dụ về định dạng: "WARP là một mạng riêng ảo (\`Virtual Private Network, VPN\`) tích hợp trong ứng dụng \`1.1.1.1\` của \`Cloudflare\`..."`;
+      let systemPrompt = `Bạn sẽ được cung cấp các bình luận ngẫu nhiên được đặt trong ba dấu nháy ("""). Thực hiện theo các bước sau để trả lời truy vấn:
+      1. Tự bạn giải quyết vấn đề. Chỉ đưa ra câu trả lời khi đã giải quyết xong
+      2. Tìm các bình luận liên quan, bổ sung thông tin tổng quan cho vấn đề.
+      Diễn đạt phải chi tiết, đầy đủ và toàn diện. Phân tích sâu sắc các khái niệm và thông tin liên quan bằng từ ngữ phổ thông. Đánh dấu từ khóa, thuật ngữ, từ đầy đủ của từ viết tắt trong dấu backtick. 
+      Ví dụ về định dạng: "1. WARP là một mạng riêng ảo (\`Virtual Private Network, VPN\`) tích hợp trong ứng dụng \`1.1.1.1\` của \`Cloudflare\`..."`;
 
       const promptContent =
         cardData && cardData.length > 0
@@ -65,7 +68,7 @@ function Chat({ searchTerm, cardData }: ChatProps) {
             `Các bài viết: """` +
             cardData.map((item) => `${item.text}`).join("\n---\n") +
             `"""`
-          : "Explain how AI works in detail, including examples, technical insights, and a thorough discussion of underlying algorithms and data processing.";
+          : "Explain how AI works";
 
       logger("info", "Prompt content:", promptContent);
 
@@ -137,9 +140,11 @@ function Chat({ searchTerm, cardData }: ChatProps) {
       } finally {
         reader.releaseLock();
       }
+      setIsGenerating(false);
     } catch (err: any) {
       if (!signal.aborted) {
         setError(String(err));
+        setIsGenerating(false);
       }
     }
   }
@@ -228,7 +233,7 @@ function Chat({ searchTerm, cardData }: ChatProps) {
     <div>
       {error && error.includes("Gemini API key") ? (
         <div style={{ marginBottom: "10px" }}>
-          Gemini API key appears broken or limit reached. Get API key from{" "}
+          Gemini API key tạm thời không khả dụng. Truy cập <br></br>
           <a
             className="text-blue-500 hover:underline"
             href="https://aistudio.google.com/apikey"
@@ -236,13 +241,13 @@ function Chat({ searchTerm, cardData }: ChatProps) {
             rel="noreferrer"
           >
             https://aistudio.google.com/apikey
-          </a>{" "}
-          and enter your API key below.
+          </a><br></br>
+          và nhập API key của bạn vào đây:
           <div className="mt-2 flex gap-2">
             <input
               className="flex-1 rounded-md border-2 border-gray-300 p-1 focus:border-blue-500 focus:outline-none"
               type="text"
-              placeholder="Enter new API key"
+              placeholder="Nhập API key"
               value={newApiKey ? formatApiKey(newApiKey) : ""}
               onChange={(e) => setNewApiKey(e.target.value)}
             />
@@ -250,7 +255,7 @@ function Chat({ searchTerm, cardData }: ChatProps) {
               className="rounded-md bg-blue-500 p-1 text-white hover:bg-blue-600"
               onClick={handleApiKeySubmit}
             >
-              Save API Key
+              Lưu
             </button>
           </div>
         </div>
@@ -258,7 +263,7 @@ function Chat({ searchTerm, cardData }: ChatProps) {
         <div style={{ color: "red", marginBottom: "10px" }}>{error}</div>
       ) : null}
       <ReactMarkdown>{displayedText || "Generating..."}</ReactMarkdown>
-      {displayedText === generatedText && generatedText !== "" && (
+      {generatedText && displayedText === generatedText && !isGenerating && (
         <div className="mt-2 flex gap-2">
           <button
             onClick={copyHandler}

@@ -16,9 +16,8 @@ interface CardProps {
 }
 
 const renderTextWithClickableLinks = (text: string) => {
-  // https://stackoverflow.com/questions/3809401/what-is-a-good-regular-expression-to-match-a-url
   const urlRegex =
-    /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)/g;
+    /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9]{1,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/g;
 
   const parts = [];
   let lastIndex = 0;
@@ -84,7 +83,9 @@ const CardItem: React.FC<Data> = ({ title, url, text }) => {
           alt={title}
         />
         <div className="ml-2 overflow-hidden group-hover:underline">
-          <h2 className="text-sm">{title}</h2>
+          <h2 className="overflow-hidden truncate text-ellipsis whitespace-nowrap text-sm">
+            {title}
+          </h2>
           <div className="overflow-hidden truncate text-ellipsis whitespace-nowrap text-[12px] leading-[16px] text-gray-600 sm:text-xs">
             {url}
           </div>
