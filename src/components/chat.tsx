@@ -56,9 +56,10 @@ function Chat({ searchTerm, cardData }: ChatProps) {
     }
 
     try {
-      let systemPrompt = `Bạn sẽ được cung cấp các bình luận ngẫu nhiên được đặt trong ba dấu nháy ("""). Thực hiện theo các bước sau để trả lời truy vấn:
-      1. Tự bạn giải quyết vấn đề. Chỉ đưa ra câu trả lời khi đã giải quyết xong
-      2. Tìm các bình luận liên quan, bổ sung thông tin tổng quan cho vấn đề.
+      let systemPrompt = `Bạn sẽ được cung cấp các tài liệu ngẫu nhiên được đặt trong ba dấu nháy ("""). Tập trung trả lời truy vấn theo các hướng dẫn sau:
+      - Đầu tiên, trả lời bằng kiến thức của bạn.
+      - Nếu không có tài liệu nào liên quan, hãy trả lời bằng kiến thức của bạn.
+      - Bổ sung thông tin tổng quan cho vấn đề.
       Diễn đạt phải chi tiết, đầy đủ và toàn diện. Phân tích sâu sắc các khái niệm và thông tin liên quan bằng từ ngữ phổ thông. Đánh dấu từ khóa, thuật ngữ, từ đầy đủ của từ viết tắt trong dấu backtick. 
       Ví dụ về định dạng: "1. WARP là một mạng riêng ảo (\`Virtual Private Network, VPN\`) tích hợp trong ứng dụng \`1.1.1.1\` của \`Cloudflare\`..."`;
 

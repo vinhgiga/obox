@@ -13,6 +13,7 @@ const Header: React.FC<HeaderProps> = ({ onSearch }) => {
   const { handleSearch: contextHandleSearch } = useAppContext();
   const [searchTerm, setSearchTerm] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const [isFocused, setIsFocused] = useState(false);
 
   const handleSearch = (e?: FormEvent) => {
     e?.preventDefault();
@@ -20,6 +21,11 @@ const Header: React.FC<HeaderProps> = ({ onSearch }) => {
       contextHandleSearch(searchTerm);
     } else if (onSearch) {
       onSearch(searchTerm);
+    }
+    // Reset focus state after search
+    setIsFocused(false);
+    if (textareaRef.current) {
+      textareaRef.current.blur();
     }
   };
 
@@ -60,12 +66,16 @@ const Header: React.FC<HeaderProps> = ({ onSearch }) => {
                 <div className="flex flex-[1] flex-wrap pl-[10px]">
                   <TextareaAutosize
                     ref={textareaRef}
-                    maxRows={4}
-                    className="scrollbar-custom flex-grow resize-none overflow-hidden overflow-y-auto overflow-x-hidden whitespace-nowrap border-0 border-b-[8px] border-transparent bg-transparent px-2 pb-[3px] pt-[11px] text-[16px] leading-[22px] outline-none focus:ring-0 focus-visible:ring-0"
+                    maxRows={isFocused ? 4 : 1}
+                    className={`scrollbar-custom flex-grow resize-none overflow-hidden ${
+                      isFocused ? "overflow-y-auto" : "overflow-y-hidden"
+                    } overflow-x-hidden whitespace-nowrap border-0 border-b-[8px] border-transparent bg-transparent px-2 pb-[3px] pt-[11px] text-[16px] leading-[22px] outline-none focus:ring-0 focus-visible:ring-0`}
                     placeholder="Tìm kiếm"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     onKeyDown={handleKeyDown}
+                    onFocus={() => setIsFocused(true)}
+                    onBlur={() => setIsFocused(false)}
                   />
                 </div>
                 {searchTerm.length > 0 && (
