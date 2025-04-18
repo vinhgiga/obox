@@ -1,9 +1,4 @@
-<div align="center">
-
-<a href='https://obox.web.app'>
-  <img src="/assets/thumbnail.png" width="1000" alt="icon"/>
-</a>
-</div>
+[![Obox](/assets/thumbnail.png)](https://obox.web.app)
 
 English | [Tiếng Việt](README.vi.md)
 

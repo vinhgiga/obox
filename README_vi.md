@@ -1,4 +1,4 @@
-![Obox](/assets/thumbnail.png)
+[![Obox](/assets/thumbnail.png)](https://obox.web.app)
 
 [English](README.md) | Tiếng Việt
 
