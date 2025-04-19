@@ -69,7 +69,7 @@ const Header: React.FC<HeaderProps> = ({ onSearch }) => {
                     maxRows={isFocused ? 4 : 1}
                     className={`scrollbar-custom flex-grow resize-none overflow-hidden ${
                       isFocused ? "overflow-y-auto" : "overflow-y-hidden"
-                    } overflow-x-hidden whitespace-nowrap border-0 border-b-[8px] border-transparent bg-transparent px-2 pb-[3px] pt-[11px] text-[16px] leading-[22px] outline-none focus:ring-0 focus-visible:ring-0`}
+                    } overflow-x-hidden border-0 border-b-[8px] border-transparent bg-transparent px-2 pb-[3px] pt-[11px] text-[16px] leading-[22px] outline-none focus:ring-0 focus-visible:ring-0`}
                     placeholder="Tìm kiếm"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
