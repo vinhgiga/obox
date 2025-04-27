@@ -4,6 +4,7 @@ import Header from "./components/header";
 import SearchResults from "./components/searchResults";
 import Chat from "./components/chat";
 import { useAppContext } from "./context/AppContext";
+import QueryBar from "./components/queryBar";
 
 const App: React.FC = () => {
   const { searchState, handleSearch } = useAppContext();
@@ -22,7 +23,7 @@ const App: React.FC = () => {
     "ưu điểm ví momo",
     "chrome extension",
     "đánh giá iphone 16e",
-    "RAG là gì"
+    "RAG là gì",
   ];
 
   const handleExampleSearch = (term: string) => {
@@ -31,8 +32,10 @@ const App: React.FC = () => {
 
   return (
     <div className="w-full">
-      <title>Obox</title>
-      <Header onSearch={handleSearch} />
+      <Header />
+      <div className="m-20">
+        <QueryBar />
+      </div>
       <div className="my-[100px] ml-2 mr-2 flex flex-wrap-reverse items-end gap-2 lg:ml-[210px]">
         {/* SearchResults Component */}
         {hasSearched ? (

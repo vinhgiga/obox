@@ -1,3 +1,15 @@
+@import url("https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&display=swap");
+
 @tailwind base;
 @tailwind components;
+
+@layer components {
+  .btn-secondary {
+    @apply rounded-full border border-slate-400 bg-transparent px-3.5 py-2 text-sm text-black;
+  }
+  .btn-primary {
+    @apply rounded-full bg-slate-900 px-3.5 py-2 text-sm text-white;
+  }
+}
+
 @tailwind utilities;
