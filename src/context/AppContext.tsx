@@ -37,7 +37,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
     setSearchTerm(query);
 
     try {
-      const apiUrl = `https://radius-nhs-know-roses.trycloudflare.com/search/?q=${encodeURIComponent(query)}`;
+      const apiUrl = `https://left-controlling-boats-advocacy.trycloudflare.com/search/?q=${encodeURIComponent(query)}`;
       const response = await fetch(apiUrl);
       if (!response.ok) {
         throw new Error(
