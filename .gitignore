@@ -24,7 +24,8 @@ dist-ssr
 *.sw?
 
 # environment variables
-.env.local
+.env
 # firebase
 .firebaserc
 .firebase
+temp/
